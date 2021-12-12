@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const passport = require('passport');
-require('../tools/auth')(passport);
+require('../tools/auth-middleware')(passport);
 const axios = require('axios').default;
 
 const teamsController = require('./teams.controller');
