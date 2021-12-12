@@ -1,19 +1,25 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 
-
 chai.use(chaiHttp);
 const usersController = require('../users.controller');
+const teamsController = require('../../teams/teams.controller');
+
 const app = require('../../app').app;
 
-before((done) => {
-    usersController.registerUser('bettatech', '1234');
-    usersController.registerUser('mastermind', '4321');
-    done();
+beforeEach(async () => {
+    await usersController.registerUser('bettatech', '1234');
+    await usersController.registerUser('mastermind', '4321');
 })
+
+afterEach(async () => {
+    await usersController.cleanUpUsers();
+    await teamsController.cleanUpTeam();
+});
 
 describe('Suite de pruebas auth', () => {
     it('should return 401 when no jwt token available', (done) => {
+        // Cuando la llamada no tiene correctamente la llave
         chai.request(app)
             .get('/teams')
             .end((err, res) => {
@@ -26,10 +32,11 @@ describe('Suite de pruebas auth', () => {
         chai.request(app)
             .post('/auth/login')
             .end((err, res) => {
+                //Expect valid login
                 chai.assert.equal(res.statusCode, 400);
                 done();
             });
-    }); 
+    });
 
     it('should return 200 and token for succesful login', (done) => {
         chai.request(app)
@@ -37,6 +44,7 @@ describe('Suite de pruebas auth', () => {
             .set('content-type', 'application/json')
             .send({user: 'bettatech', password: '1234'})
             .end((err, res) => {
+                //Expect valid login
                 chai.assert.equal(res.statusCode, 200);
                 done();
             });
@@ -58,10 +66,5 @@ describe('Suite de pruebas auth', () => {
                         done();
                     });
             });
-    }); 
+    });
 });
-
-after((done) => {
-    usersController.cleanUpUsers();
-    done();
-})
